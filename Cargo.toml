@@ -1,0 +1,41 @@
+[package]
+name = "r-efi-alloc"
+version = "0.1.0"
+
+authors = [
+        "David Herrmann <dh.herrmann@gmail.com>",
+        "Tom Gundersen <teg@jklm.no>",
+]
+categories = [
+        "embedded",
+        "hardware-support",
+        "memory-management",
+        "no-std",
+        "os",
+]
+description = "UEFI Memory Allocator Integration"
+edition = "2018"
+homepage = "https://r-util.github.com/r-efi"
+keywords = [
+        "efi",
+        "uefi",
+        "firmware",
+        "alloc",
+        "memory",
+]
+license = "Apache-2.0 OR LGPL-2.1-or-later"
+readme = "README.md"
+repository = "https://github.com/r-util/r-efi-alloc"
+
+[features]
+# We feature-gate all examples, since they will not link correctly, unless you
+# use a UEFI target configuration. To make `cargo test` work, we exclude all
+# examples from normal runs.
+examples = []
+
+[[example]]
+name = "hello-world"
+required-features = ["examples"]
+
+[dependencies]
+r-efi = "0.1.0"
