@@ -17,7 +17,7 @@ library of rust on UEFI systems.
 
 The requirements for this project are:
 
- * r-efi >= 0.1.1
+ * r-efi >= 0.2.1
 
 ## License
 
