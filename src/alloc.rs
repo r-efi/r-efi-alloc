@@ -4,13 +4,13 @@
 //! exports an `Allocator` type that wraps a System-Table together with a UEFI memory type and
 //! forwards memory requests to the UEFI pool allocator.
 //!
-//! The allocator implements the `core::alloc::Alloc` API defined by the rust standard library.
+//! The allocator implements the `core::alloc::AllocRef` API defined by the rust standard library.
 //! Apart from the constructors, no private extensions are defined. For documentation on the
 //! allocation-API, see the rust standard library.
 //!
-//! Note that `core::alloc::Alloc` is marked unstable as of time of this crate-release. That is,
-//! future versions of this trait definition might be incompatible to the current version. Make
-//! sure you use a crate-version that matches your standard-library.
+//! Note that `core::alloc::AllocRef` is marked unstable as of time of this crate-release. That
+//! is, future versions of this trait definition might be incompatible to the current version.
+//! Make sure you use a crate-version that matches your standard-library.
 
 use r_efi::efi;
 
@@ -92,7 +92,7 @@ unsafe fn unalign_block(ptr: *mut u8, align: usize) -> *mut u8 {
 /// allocator. It takes a System-Table as input, as well as the memory type to use as backing, and
 /// then forwards all memory allocation requests to the `AllocatePool()` UEFI system.
 ///
-/// The `core::alloc::Alloc` crate is implemented for this allocator. Hence, this allocator can
+/// The `core::alloc::AllocRef` trait is implemented for this allocator. Hence, this allocator can
 /// also be used to back the global memory-allocator of `liballoc` (or `libstd`). See the `Global`
 /// type for an implementation of the global allocator.
 pub struct Allocator {
@@ -124,7 +124,7 @@ impl Allocator {
     }
 }
 
-unsafe impl core::alloc::Alloc for Allocator {
+unsafe impl core::alloc::AllocRef for Allocator {
     unsafe fn alloc(
         &mut self,
         layout: core::alloc::Layout,
