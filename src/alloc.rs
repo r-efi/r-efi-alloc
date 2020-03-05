@@ -128,7 +128,7 @@ unsafe impl core::alloc::AllocRef for Allocator {
     unsafe fn alloc(
         &mut self,
         layout: core::alloc::Layout,
-    ) -> Result<core::ptr::NonNull<u8>, core::alloc::AllocErr> {
+    ) -> Result<(core::ptr::NonNull<u8>, usize), core::alloc::AllocErr> {
         // We forward the allocation request to `AllocatePool()`. This takes the memory-type and
         // size as argument, and places a pointer to the allocation in an output argument. Note
         // that UEFI guarantees 8-byte alignment (i.e., `POOL_ALIGNMENT`). To support higher
@@ -156,6 +156,7 @@ unsafe impl core::alloc::AllocRef for Allocator {
         core::ptr::NonNull::new(
             align_block(ptr as *mut u8, align)
         ).ok_or(core::alloc::AllocErr)
+         .map(|p| (p, layout.size()))
     }
 
     unsafe fn dealloc(

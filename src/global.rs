@@ -143,7 +143,7 @@ unsafe impl core::alloc::GlobalAlloc for Bridge {
         }
 
         core::alloc::AllocRef::alloc(&mut *allocator, layout)
-            .map(|ptr| ptr.as_ptr())
+            .map(|(ptr, _)| ptr.as_ptr())
             .unwrap_or(core::ptr::null_mut())
     }
 
