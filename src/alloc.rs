@@ -125,7 +125,7 @@ impl Allocator {
 }
 
 unsafe impl core::alloc::AllocRef for Allocator {
-    unsafe fn alloc(
+    fn alloc(
         &mut self,
         layout: core::alloc::Layout,
     ) -> Result<(core::ptr::NonNull<u8>, usize), core::alloc::AllocErr> {
@@ -137,11 +137,9 @@ unsafe impl core::alloc::AllocRef for Allocator {
         let align = layout.align();
         let size = align_request(layout.size(), align);
 
-        let r = ((*(*self.system_table).boot_services).allocate_pool)(
-            self.memory_type,
-            size,
-            &mut ptr,
-        );
+        let r = unsafe {
+            ((*(*self.system_table).boot_services).allocate_pool)(self.memory_type, size, &mut ptr)
+        };
 
         // The only real error-scenario is OOM ("out-of-memory"). UEFI does not clearly specify
         // what a return value of NULL+success means (but indicates in a lot of cases that NULL is
@@ -153,10 +151,11 @@ unsafe impl core::alloc::AllocRef for Allocator {
             ptr = core::ptr::null_mut()
         }
 
-        core::ptr::NonNull::new(
-            align_block(ptr as *mut u8, align)
-        ).ok_or(core::alloc::AllocErr)
-         .map(|p| (p, layout.size()))
+        unsafe {
+            core::ptr::NonNull::new(align_block(ptr as *mut u8, align))
+                .ok_or(core::alloc::AllocErr)
+                .map(|p| (p, layout.size()))
+        }
     }
 
     unsafe fn dealloc(
