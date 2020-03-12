@@ -56,11 +56,9 @@ impl Bridge {
         // This interface is unsafe since the caller must guarantee to detach the bridge before it
         // is destroyed. There are not runtime guarantees given by this interface, it is all left
         // to the caller.
-        let p = self.attachment.compare_and_swap(
-            core::ptr::null_mut(),
-            ptr,
-            atomic::Ordering::Release,
-        );
+        let p =
+            self.attachment
+                .compare_and_swap(core::ptr::null_mut(), ptr, atomic::Ordering::Release);
 
         if p.is_null() {
             Some(())
@@ -75,11 +73,9 @@ impl Bridge {
         //
         // We use compare_and_swap() to replace the old attachment with NULL. If it was not NULL,
         // we panic. No ordering guarantees are required, since there is no dependent state.
-        let p = self.attachment.compare_and_swap(
-            ptr,
-            core::ptr::null_mut(),
-            atomic::Ordering::Relaxed,
-        );
+        let p =
+            self.attachment
+                .compare_and_swap(ptr, core::ptr::null_mut(), atomic::Ordering::Relaxed);
         assert!(p == ptr);
     }
 
@@ -100,15 +96,11 @@ impl Bridge {
         allocator: &'alloc mut crate::alloc::Allocator,
     ) -> Option<Attachment<'alloc, 'bridge>> {
         match self.raw_attach(allocator) {
-            None => {
-                None
-            }
-            Some(()) => {
-                Some(Attachment {
-                    allocator: allocator,
-                    bridge: self,
-                })
-            }
+            None => None,
+            Some(()) => Some(Attachment {
+                allocator: allocator,
+                bridge: self,
+            }),
         }
     }
 }
@@ -132,14 +124,11 @@ impl<'alloc, 'bridge> Drop for Attachment<'alloc, 'bridge> {
 // is, you must drop/deallocate all memory before dropping your attachment. See the description of
 // the bridge interface for details.
 unsafe impl core::alloc::GlobalAlloc for Bridge {
-    unsafe fn alloc(
-        &self,
-        layout: core::alloc::Layout,
-    ) -> *mut u8 {
+    unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
         let allocator = self.attachment.load(atomic::Ordering::Acquire);
 
         if allocator.is_null() {
-            return core::ptr::null_mut()
+            return core::ptr::null_mut();
         }
 
         core::alloc::AllocRef::alloc(&mut *allocator, layout)
@@ -147,11 +136,7 @@ unsafe impl core::alloc::GlobalAlloc for Bridge {
             .unwrap_or(core::ptr::null_mut())
     }
 
-    unsafe fn dealloc(
-        &self,
-        ptr: *mut u8,
-        layout: core::alloc::Layout,
-    ) {
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
         let allocator = self.attachment.load(atomic::Ordering::Acquire);
 
         assert!(!allocator.is_null());

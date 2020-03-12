@@ -158,18 +158,16 @@ unsafe impl core::alloc::AllocRef for Allocator {
         }
     }
 
-    unsafe fn dealloc(
-        &mut self,
-        ptr: core::ptr::NonNull<u8>,
-        layout: core::alloc::Layout,
-    ) {
+    unsafe fn dealloc(&mut self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
         // The spec allows returning errors from `FreePool()`. However, it must serve any valid
         // requests. Only `INVALID_PARAMETER` is listed as possible error. Hence, there is no
         // point in forwarding the return value. We still assert on it to improve diagnostics in
         // early-boot situations. This should be a negligible performance penalty.
-        let r = ((*(*self.system_table).boot_services).free_pool)(
-            unalign_block(ptr.as_ptr(), layout.align()) as *mut core::ffi::c_void
-        );
+        let r = ((*(*self.system_table).boot_services).free_pool)(unalign_block(
+            ptr.as_ptr(),
+            layout.align(),
+        )
+            as *mut core::ffi::c_void);
         assert!(!r.is_error());
     }
 }

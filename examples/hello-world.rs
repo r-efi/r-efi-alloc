@@ -23,7 +23,6 @@
 
 #![feature(alloc)]
 #![feature(alloc_error_handler)]
-
 #![no_main]
 #![no_std]
 
@@ -66,9 +65,8 @@ pub fn efi_run(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     v.push(0);
 
     // Print the string on console-out.
-    let r = unsafe {
-        ((*(*st).con_out).output_string)((*st).con_out, v.as_mut_slice().as_mut_ptr())
-    };
+    let r =
+        unsafe { ((*(*st).con_out).output_string)((*st).con_out, v.as_mut_slice().as_mut_ptr()) };
     if r.is_error() {
         return r;
     }
@@ -109,12 +107,10 @@ pub fn efi_run(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
 // allocator is a fixed type, so you need to use custom-allocators for all allocations that need
 // to be put in different memory regions.
 #[no_mangle]
-pub extern fn efi_main(h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
+pub extern "C" fn efi_main(h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     unsafe {
-        let mut allocator = r_efi_alloc::alloc::Allocator::from_system_table(
-            st,
-            efi::MemoryType::LoaderData,
-        );
+        let mut allocator =
+            r_efi_alloc::alloc::Allocator::from_system_table(st, efi::MemoryType::LoaderData);
         let _attachment = GLOBAL_ALLOCATOR.attach(&mut allocator);
 
         efi_run(h, st)
