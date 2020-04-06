@@ -128,17 +128,19 @@ unsafe impl core::alloc::AllocRef for Allocator {
     fn alloc(
         &mut self,
         layout: core::alloc::Layout,
-    ) -> Result<(core::ptr::NonNull<u8>, usize), core::alloc::AllocErr> {
+        init: core::alloc::AllocInit,
+    ) -> Result<core::alloc::MemoryBlock, core::alloc::AllocErr> {
         // We forward the allocation request to `AllocatePool()`. This takes the memory-type and
         // size as argument, and places a pointer to the allocation in an output argument. Note
         // that UEFI guarantees 8-byte alignment (i.e., `POOL_ALIGNMENT`). To support higher
         // alignments, see the `align_request() / align_block() / unalign_block()` helpers.
         let mut ptr: *mut core::ffi::c_void = core::ptr::null_mut();
         let align = layout.align();
-        let size = align_request(layout.size(), align);
+        let size = layout.size();
+        let size_allocated = align_request(size, align);
 
         let r = unsafe {
-            ((*(*self.system_table).boot_services).allocate_pool)(self.memory_type, size, &mut ptr)
+            ((*(*self.system_table).boot_services).allocate_pool)(self.memory_type, size_allocated, &mut ptr)
         };
 
         // The only real error-scenario is OOM ("out-of-memory"). UEFI does not clearly specify
@@ -147,14 +149,25 @@ unsafe impl core::alloc::AllocRef for Allocator {
         // available for EFI_CONVENTIONAL_MEMORY, a NULL pointer cannot be a valid return pointer.
         // Therefore, we treat both a function failure as well as a NULL pointer the same and
         // return `AllocErr`.
-        if r.is_error() {
-            ptr = core::ptr::null_mut()
-        }
+        if r.is_error() || ptr.is_null() {
+            Err(core::alloc::AllocErr)
+        } else {
+            unsafe {
+                ptr = align_block(ptr as *mut u8, align) as *mut core::ffi::c_void;
+                match init {
+                    core::alloc::AllocInit::Uninitialized => {
+                        // Nothing to do.
+                    },
+                    core::alloc::AllocInit::Zeroed => {
+                        core::ptr::write_bytes(ptr, 0, size);
+                    },
+                }
+            }
 
-        unsafe {
-            core::ptr::NonNull::new(align_block(ptr as *mut u8, align))
-                .ok_or(core::alloc::AllocErr)
-                .map(|p| (p, layout.size()))
+            Ok(core::alloc::MemoryBlock {
+                ptr: core::ptr::NonNull::new(ptr as *mut u8).unwrap(),
+                size: size
+            })
         }
     }
 
@@ -163,11 +176,8 @@ unsafe impl core::alloc::AllocRef for Allocator {
         // requests. Only `INVALID_PARAMETER` is listed as possible error. Hence, there is no
         // point in forwarding the return value. We still assert on it to improve diagnostics in
         // early-boot situations. This should be a negligible performance penalty.
-        let r = ((*(*self.system_table).boot_services).free_pool)(unalign_block(
-            ptr.as_ptr(),
-            layout.align(),
-        )
-            as *mut core::ffi::c_void);
+        let original = unalign_block(ptr.as_ptr(), layout.align()) as *mut core::ffi::c_void;
+        let r = ((*(*self.system_table).boot_services).free_pool)(original);
         assert!(!r.is_error());
     }
 }

@@ -131,8 +131,8 @@ unsafe impl core::alloc::GlobalAlloc for Bridge {
             return core::ptr::null_mut();
         }
 
-        core::alloc::AllocRef::alloc(&mut *allocator, layout)
-            .map(|(ptr, _)| ptr.as_ptr())
+        core::alloc::AllocRef::alloc(&mut *allocator, layout, core::alloc::AllocInit::Uninitialized)
+            .map(|mem| mem.ptr.as_ptr())
             .unwrap_or(core::ptr::null_mut())
     }
 
