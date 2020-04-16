@@ -3,7 +3,7 @@ name = "r-efi-alloc"
 version = "0.1.0"
 
 authors = [
-        "David Herrmann <dh.herrmann@gmail.com>",
+        "David Rheinsberg <david.rheinsberg@gmail.com>",
         "Tom Gundersen <teg@jklm.no>",
 ]
 categories = [
