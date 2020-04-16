@@ -7,21 +7,33 @@ The r-efi-alloc project integrates the UEFI memory allocator routines with the
 rust standard library allocation hooks. This allows using the `alloc` standard
 library of rust on UEFI systems.
 
-## Project
+### Project
 
- * Website: [@r-util](https://r-util.github.io/r-efi)
- * Bug Tracker: [@github](https://github.com/r-util/r-efi-alloc/issues)
- * Git Web: [@github](https://github.com/r-util/r-efi-alloc)
+ * **Website**: <https://github.com/r-efi/r-efi/wiki>
+ * **Bug Tracker**: <https://github.com/r-efi/r-efi-alloc/issues>
 
-## Requirements
+### Requirements
 
 The requirements for this project are:
 
- * r-efi >= 0.2.1
+ * `rustc >= 1.36.0`
+ * `r-efi >= 2.2.0`
 
-## License
+### Build
 
- * Apache Software License 2.0
- * Lesser General Public License 2.1+
+To build this project, run:
 
-See AUTHORS for details.
+```sh
+cargo build
+```
+
+### Repository:
+
+ - **web**:   <https://github.com/r-efi/r-efi-alloc>
+ - **https**: `https://github.com/r-efi/r-efi-alloc.git`
+ - **ssh**:   `git@github.com:r-efi/r-efi-alloc.git`
+
+### License:
+
+ - **Apache-2.0** OR **LGPL-2.1-or-later**
+ - See AUTHORS file for details.
