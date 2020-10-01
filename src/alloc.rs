@@ -126,7 +126,7 @@ impl Allocator {
 
 unsafe impl core::alloc::AllocRef for Allocator {
     fn alloc(
-        &mut self,
+        &self,
         layout: core::alloc::Layout,
     ) -> Result<core::ptr::NonNull<[u8]>, core::alloc::AllocErr> {
         // We forward the allocation request to `AllocatePool()`. This takes the memory-type and
@@ -165,7 +165,7 @@ unsafe impl core::alloc::AllocRef for Allocator {
         ).unwrap())
     }
 
-    unsafe fn dealloc(&mut self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
+    unsafe fn dealloc(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
         if layout.size() != 0 {
             // The spec allows returning errors from `FreePool()`. However, it
             // must serve any valid requests. Only `INVALID_PARAMETER` is
