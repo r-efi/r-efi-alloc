@@ -128,7 +128,7 @@ unsafe impl core::alloc::AllocRef for Allocator {
     fn alloc(
         &self,
         layout: core::alloc::Layout,
-    ) -> Result<core::ptr::NonNull<[u8]>, core::alloc::AllocErr> {
+    ) -> Result<core::ptr::NonNull<[u8]>, core::alloc::AllocError> {
         // We forward the allocation request to `AllocatePool()`. This takes the memory-type and
         // size as argument, and places a pointer to the allocation in an output argument. Note
         // that UEFI guarantees 8-byte alignment (i.e., `POOL_ALIGNMENT`). To support higher
@@ -148,9 +148,9 @@ unsafe impl core::alloc::AllocRef for Allocator {
             // never a valid pointer). Furthermore, since the 0-page is usually unmapped and not
             // available for EFI_CONVENTIONAL_MEMORY, a NULL pointer cannot be a valid return pointer.
             // Therefore, we treat both a function failure as well as a NULL pointer the same and
-            // return `AllocErr`.
+            // return `AllocError`.
             if r.is_error() || ptr.is_null() {
-                return Err(core::alloc::AllocErr);
+                return Err(core::alloc::AllocError);
             }
 
             unsafe {
