@@ -4,11 +4,11 @@
 //! exports an `Allocator` type that wraps a System-Table together with a UEFI memory type and
 //! forwards memory requests to the UEFI pool allocator.
 //!
-//! The allocator implements the `core::alloc::AllocRef` API defined by the rust standard library.
+//! The allocator implements the `core::alloc::Allocator` API defined by the rust standard library.
 //! Apart from the constructors, no private extensions are defined. For documentation on the
 //! allocation-API, see the rust standard library.
 //!
-//! Note that `core::alloc::AllocRef` is marked unstable as of time of this crate-release. That
+//! Note that `core::alloc::Allocator` is marked unstable as of time of this crate-release. That
 //! is, future versions of this trait definition might be incompatible to the current version.
 //! Make sure you use a crate-version that matches your standard-library.
 
@@ -92,7 +92,7 @@ unsafe fn unalign_block(ptr: *mut u8, align: usize) -> *mut u8 {
 /// allocator. It takes a System-Table as input, as well as the memory type to use as backing, and
 /// then forwards all memory allocation requests to the `AllocatePool()` UEFI system.
 ///
-/// The `core::alloc::AllocRef` trait is implemented for this allocator. Hence, this allocator can
+/// The `core::alloc::Allocator` trait is implemented for this allocator. Hence, this allocator can
 /// also be used to back the global memory-allocator of `liballoc` (or `libstd`). See the `Global`
 /// type for an implementation of the global allocator.
 pub struct Allocator {
@@ -124,8 +124,8 @@ impl Allocator {
     }
 }
 
-unsafe impl core::alloc::AllocRef for Allocator {
-    fn alloc(
+unsafe impl core::alloc::Allocator for Allocator {
+    fn allocate(
         &self,
         layout: core::alloc::Layout,
     ) -> Result<core::ptr::NonNull<[u8]>, core::alloc::AllocError> {
@@ -165,7 +165,7 @@ unsafe impl core::alloc::AllocRef for Allocator {
         ).unwrap())
     }
 
-    unsafe fn dealloc(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
+    unsafe fn deallocate(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
         if layout.size() != 0 {
             // The spec allows returning errors from `FreePool()`. However, it
             // must serve any valid requests. Only `INVALID_PARAMETER` is

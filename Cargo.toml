@@ -38,4 +38,4 @@ name = "hello-world"
 required-features = ["examples"]
 
 [dependencies]
-r-efi = "2.2.0"
+r-efi = "4.0.0"
