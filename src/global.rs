@@ -131,7 +131,7 @@ unsafe impl core::alloc::GlobalAlloc for Bridge {
             return core::ptr::null_mut();
         }
 
-        core::alloc::AllocRef::alloc(&mut *allocator, layout)
+        core::alloc::Allocator::allocate(&mut *allocator, layout)
             .map(|mut mem| mem.as_mut().as_mut_ptr())
             .unwrap_or(core::ptr::null_mut())
     }
@@ -141,7 +141,7 @@ unsafe impl core::alloc::GlobalAlloc for Bridge {
 
         assert!(!allocator.is_null());
 
-        core::alloc::AllocRef::dealloc(
+        core::alloc::Allocator::deallocate(
             &mut *allocator,
             core::ptr::NonNull::new_unchecked(ptr),
             layout,
