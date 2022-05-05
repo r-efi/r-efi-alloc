@@ -47,20 +47,25 @@ impl Bridge {
     unsafe fn raw_attach(&self, ptr: *mut crate::alloc::Allocator) -> Option<()> {
         // Set @ptr as the attachment on this bridge. This only succeeds if there is not already
         // an attachment set.
-        // We use a compare_and_swap() to change the attachment if it was NULL. We use Release
+        // We use a compare_exchange() to change the attachment if it was NULL. We use Release
         // semantics, so any stores to your allocator are visible once the attachment is written.
         // On error, no ordering guarantees are given, since this interface is not meant to be a
         // programmatic query.
         // Note that the Release pairs with the Acquire in the GlobalAlloc trait below.
         //
         // This interface is unsafe since the caller must guarantee to detach the bridge before it
-        // is destroyed. There are not runtime guarantees given by this interface, it is all left
+        // is destroyed. There are no runtime guarantees given by this interface, it is all left
         // to the caller.
         let p =
             self.attachment
-                .compare_and_swap(core::ptr::null_mut(), ptr, atomic::Ordering::Release);
+                .compare_exchange(
+                    core::ptr::null_mut(),
+                    ptr,
+                    atomic::Ordering::Release,
+                    atomic::Ordering::Relaxed,
+                );
 
-        if p.is_null() {
+        if p.is_ok() {
             Some(())
         } else {
             None
@@ -71,12 +76,17 @@ impl Bridge {
         // Detach @ptr from this bridge. The caller must guarantee @ptr is already attached to the
         // bridge. This function will panic if @ptr is not the current attachment.
         //
-        // We use compare_and_swap() to replace the old attachment with NULL. If it was not NULL,
+        // We use compare_exchange() to replace the old attachment with NULL. If it was not NULL,
         // we panic. No ordering guarantees are required, since there is no dependent state.
         let p =
             self.attachment
-                .compare_and_swap(ptr, core::ptr::null_mut(), atomic::Ordering::Relaxed);
-        assert!(p == ptr);
+                .compare_exchange(
+                    ptr,
+                    core::ptr::null_mut(),
+                    atomic::Ordering::Relaxed,
+                    atomic::Ordering::Relaxed,
+                );
+        assert!(p.is_ok());
     }
 
     /// Attach an allocator
