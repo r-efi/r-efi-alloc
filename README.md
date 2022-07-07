@@ -35,5 +35,5 @@ cargo build
 
 ### License:
 
- - **Apache-2.0** OR **LGPL-2.1-or-later**
+ - **MIT** OR **Apache-2.0** OR **LGPL-2.1-or-later**
  - See AUTHORS file for details.
