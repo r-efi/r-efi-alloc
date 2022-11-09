@@ -68,7 +68,7 @@ unsafe fn align_block(ptr: *mut u8, align: usize) -> *mut u8 {
         // address directly in front. This will allow `unalign_block()` to retrieve the original
         // address, so it can free the entire memory block.
         let aligned = ptr.add(offset);
-        *(aligned as *mut Marker).offset(-1) = Marker(ptr);
+        core::ptr::write((aligned as *mut Marker).offset(-1), Marker(ptr));
         aligned
     } else {
         ptr
@@ -80,7 +80,7 @@ unsafe fn unalign_block(ptr: *mut u8, align: usize) -> *mut u8 {
     // stored directly in front of the aligned block, and return it to the caller. Note that this
     // is only the case if the alignment exceeded the guaranteed alignment of the allocator.
     if align > POOL_ALIGNMENT {
-        (*(ptr as *mut Marker).offset(-1)).0
+        core::ptr::read((ptr as *mut Marker).offset(-1)).0
     } else {
         ptr
     }
