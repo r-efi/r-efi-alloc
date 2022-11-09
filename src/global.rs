@@ -56,14 +56,12 @@ impl Bridge {
         // This interface is unsafe since the caller must guarantee to detach the bridge before it
         // is destroyed. There are no runtime guarantees given by this interface, it is all left
         // to the caller.
-        let p =
-            self.attachment
-                .compare_exchange(
-                    core::ptr::null_mut(),
-                    ptr,
-                    atomic::Ordering::Release,
-                    atomic::Ordering::Relaxed,
-                );
+        let p = self.attachment.compare_exchange(
+            core::ptr::null_mut(),
+            ptr,
+            atomic::Ordering::Release,
+            atomic::Ordering::Relaxed,
+        );
 
         if p.is_ok() {
             Some(())
@@ -78,14 +76,12 @@ impl Bridge {
         //
         // We use compare_exchange() to replace the old attachment with NULL. If it was not NULL,
         // we panic. No ordering guarantees are required, since there is no dependent state.
-        let p =
-            self.attachment
-                .compare_exchange(
-                    ptr,
-                    core::ptr::null_mut(),
-                    atomic::Ordering::Relaxed,
-                    atomic::Ordering::Relaxed,
-                );
+        let p = self.attachment.compare_exchange(
+            ptr,
+            core::ptr::null_mut(),
+            atomic::Ordering::Relaxed,
+            atomic::Ordering::Relaxed,
+        );
         assert!(p.is_ok());
     }
 

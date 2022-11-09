@@ -107,8 +107,7 @@ pub fn efi_run(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
 #[no_mangle]
 pub extern "C" fn efi_main(h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     unsafe {
-        let mut allocator =
-            r_efi_alloc::alloc::Allocator::from_system_table(st, efi::LOADER_DATA);
+        let mut allocator = r_efi_alloc::alloc::Allocator::from_system_table(st, efi::LOADER_DATA);
         let _attachment = GLOBAL_ALLOCATOR.attach(&mut allocator);
 
         efi_run(h, st)

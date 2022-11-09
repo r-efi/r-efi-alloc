@@ -140,7 +140,11 @@ unsafe impl core::alloc::Allocator for Allocator {
 
         if size > 0 {
             let r = unsafe {
-                ((*(*self.system_table).boot_services).allocate_pool)(self.memory_type, size_allocated, &mut ptr)
+                ((*(*self.system_table).boot_services).allocate_pool)(
+                    self.memory_type,
+                    size_allocated,
+                    &mut ptr,
+                )
             };
 
             // The only real error-scenario is OOM ("out-of-memory"). UEFI does not clearly specify
@@ -160,9 +164,7 @@ unsafe impl core::alloc::Allocator for Allocator {
             ptr = layout.dangling().as_ptr() as *mut _;
         }
 
-        Ok(core::ptr::NonNull::new(
-            core::ptr::slice_from_raw_parts(ptr, size) as *mut _
-        ).unwrap())
+        Ok(core::ptr::NonNull::new(core::ptr::slice_from_raw_parts(ptr, size) as *mut _).unwrap())
     }
 
     unsafe fn deallocate(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
