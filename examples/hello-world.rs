@@ -16,12 +16,10 @@
 // make it forward the error to our panic-handler, which we already provided in the previous
 // example.
 //
-// Lastly, the `alloc::*` namespace is unstable, so we need the `alloc` feature. Similarly, the
-// error-handler required by the `alloc::*` objects is unstable as well, so the
+// The error-handler required by the `alloc::*` objects is unstable as well, so the
 // `alloc_error_handler` feature is required.
 //
 
-#![feature(alloc)]
 #![feature(alloc_error_handler)]
 #![no_main]
 #![no_std]
@@ -110,7 +108,7 @@ pub fn efi_run(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
 pub extern "C" fn efi_main(h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     unsafe {
         let mut allocator =
-            r_efi_alloc::alloc::Allocator::from_system_table(st, efi::MemoryType::LoaderData);
+            r_efi_alloc::alloc::Allocator::from_system_table(st, efi::LOADER_DATA);
         let _attachment = GLOBAL_ALLOCATOR.attach(&mut allocator);
 
         efi_run(h, st)
