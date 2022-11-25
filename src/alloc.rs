@@ -6,15 +6,14 @@
 //! pool allocator.
 //!
 //! The allocator implements the `core::alloc::Allocator` API defined by the
-//! rust standard library. Apart from the constructors, no private extensions
-//! are defined. For documentation on the allocation-API, see the rust standard
-//! library.
+//! rust standard library. Furthermore, as an alternative to this unstable
+//! standard library trait, raw alloc and dealloc functions are provided that
+//! map to their equivalents from the `raw` module.
 //!
-//! Note that `core::alloc::Allocator` is marked unstable as of time of this
-//! crate-release. That is, future versions of this trait definition might be
-//! incompatible to the current version. Make sure you use a crate-version that
-//! matches your standard-library. Furthermore, this module is only provided if
-//! the `allocator_api` feature is enabled.
+//! The `core::alloc::Allocator` trait is only implemented if the
+//! `allocator_api` feature is enabled. This requires a nightly / unstable
+//! compiler. If the feature is not enabled, only the raw interface is
+//! available.
 
 use r_efi::efi;
 
@@ -28,7 +27,7 @@ use r_efi::efi;
 /// The `core::alloc::Allocator` trait is implemented for this allocator.
 /// Hence, this allocator can also be used to back the global memory-allocator
 /// of `liballoc` (or `libstd`). See the `Global` type for an implementation of
-/// the global allocator.
+/// the global allocator, based on this type.
 pub struct Allocator {
     system_table: *mut efi::SystemTable,
     memory_type: efi::MemoryType,
@@ -106,6 +105,7 @@ impl Allocator {
     }
 }
 
+#[cfg(feature = "allocator_api")]
 unsafe impl core::alloc::Allocator for Allocator {
     fn allocate(
         &self,

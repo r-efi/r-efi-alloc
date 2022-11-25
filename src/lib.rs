@@ -8,10 +8,6 @@
 //! UEFI memory allocators to the rust standard library. Lastly, `alloc`
 //! implements the unstable `core::alloc::Allocator` trait which likely
 //! will take the role of the main rust memory allocators in the future.
-//!
-//! The crate is compatible to stable rust. However, the `alloc` module is only
-//! provided if a nightly compiler is used and the `allocator_api` feature
-//! is enabled. Otherwise, only the stable allocator integration is provided.
 
 // The `core::alloc::Allocator` trait is still unstable and hidden behind the
 // `allocator_api` feature. Make sure to enable it, so we can implement this
@@ -27,7 +23,6 @@
 // during tests, so we can run them on the host.
 #![cfg_attr(not(test), no_std)]
 
-#[cfg(feature = "allocator_api")]
 pub mod alloc;
 #[cfg(feature = "allocator_api")]
 pub mod global;
