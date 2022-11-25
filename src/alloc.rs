@@ -82,7 +82,7 @@ impl Allocator {
     ///    by `allocate_pool` of the boot-services. A caller must not assume
     ///    this when forwarding the pointer to other allocation services
     ///    outside of this module.
-    pub unsafe fn alloc(self, layout: core::alloc::Layout) -> *mut u8 {
+    pub unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
         crate::raw::alloc(self.system_table, layout, self.memory_type)
     }
 
@@ -101,7 +101,7 @@ impl Allocator {
     ///
     ///  * The passed layout must match the layout used to allocate the memory
     ///    block.
-    pub unsafe fn dealloc(self, ptr: *mut u8, layout: core::alloc::Layout) {
+    pub unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
         crate::raw::dealloc(self.system_table, ptr, layout)
     }
 }
