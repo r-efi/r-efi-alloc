@@ -58,6 +58,14 @@ unsafe impl core::alloc::Allocator for Allocator {
         layout: core::alloc::Layout,
     ) -> Result<core::ptr::NonNull<[u8]>, core::alloc::AllocError> {
         let size = layout.size();
+        let align = layout.align();
+
+        // We overallocate in case of high alignment requirements. Make sure
+        // those do not overflow, and if they do refuse the allocation as there
+        // cannot be enough address-space to serve it.
+        if size.checked_add(align).is_none() {
+            return Err(core::alloc::AllocError);
+        }
 
         let ptr = if size > 0 {
             unsafe { crate::raw::alloc(self.system_table, layout, self.memory_type) }
