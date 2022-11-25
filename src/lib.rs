@@ -24,6 +24,5 @@
 #![cfg_attr(not(test), no_std)]
 
 pub mod alloc;
-#[cfg(feature = "allocator_api")]
 pub mod global;
 pub mod raw;
