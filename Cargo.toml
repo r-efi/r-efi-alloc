@@ -28,6 +28,9 @@ readme = "README.md"
 repository = "https://github.com/r-efi/r-efi-alloc"
 
 [features]
+# Use the unstable `allocator_api` feature of the standard library to provide
+# an allocator with the `core::alloc::Allocator` trait.
+allocator_api = []
 # We feature-gate all examples, since they will not link correctly, unless you
 # use a UEFI target configuration. To make `cargo test` work, we exclude all
 # examples from normal runs.
@@ -35,7 +38,7 @@ examples = []
 
 [[example]]
 name = "hello-world"
-required-features = ["examples"]
+required-features = ["allocator_api", "examples"]
 
 [dependencies]
 r-efi = "4.0.0"

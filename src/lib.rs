@@ -18,12 +18,14 @@
 // The `core::alloc::Alloc` trait is still unstable and hidden behind the `allocator_api` feature.
 // Make sure to enable it, so we can implement this trait. The `alloc_layout_extra` feature
 // provides additional extensions to the stable `Layout` object.
-#![feature(alloc_layout_extra, allocator_api)]
+#![cfg_attr(feature = "allocator_api", feature(alloc_layout_extra, allocator_api))]
 // We need no features of std, so mark the crate as `no_std` (more importantly, `std` might not
 // even be available on UEFI systems). However, pull in `std` during tests, so we can run them on
 // the host.
 #![cfg_attr(not(test), no_std)]
 
+#[cfg(feature = "allocator_api")]
 pub mod alloc;
+#[cfg(feature = "allocator_api")]
 pub mod global;
 pub mod raw;
