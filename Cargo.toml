@@ -38,7 +38,7 @@ examples = []
 
 [[example]]
 name = "hello-world"
-required-features = ["allocator_api", "examples"]
+required-features = ["examples"]
 
 [dependencies]
 r-efi = "4.0.0"
