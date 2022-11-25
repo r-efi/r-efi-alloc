@@ -106,11 +106,6 @@ unsafe fn unalign_block(ptr: *mut u8, align: usize) -> *mut u8 {
 ///
 ///  * The allocation size must not be 0. The function will panic otherwise.
 ///
-///  * The sum of size and alignment specified in `layout` must not overflow.
-///    In particular, to provide for arbitrary alignments, the allocator must
-///    reserve extra space in form of an alignment block. Hence, this function
-///    will panic if `layout.size().checked_add(layout.align())` is `None`.
-///
 ///  * It must be safe for this function to call `allocate_pool` of the
 ///    boot-services provided via the system-table. It is the responsibility of
 ///    the caller to retain boot-services until the returned allocation is
@@ -124,21 +119,25 @@ pub unsafe fn alloc(
     layout: core::alloc::Layout,
     memory_type: efi::MemoryType,
 ) -> *mut u8 {
-    // We forward the allocation request to `AllocatePool()`. This takes the
-    // memory-type and size as argument, and places a pointer to the allocation
-    // in an output argument. Note that UEFI guarantees 8-byte alignment (i.e.,
-    // `POOL_ALIGNMENT`). To support higher alignments, see the
-    // `align_request() / align_block() / unalign_block()` helpers.
-
     // `Layout` guarantees the size+align combination does not overflow.
     let align = layout.align();
     let size = layout.size();
 
     // Verify our increased requirements are met.
     assert!(size > 0);
-    assert!(size.checked_add(align).is_some());
 
-    // Request suitable space from the allocator.
+    // We need extra allocation space to guarantee large alignment requests. If
+    // `size+align` overflows, there will be insufficient address-space for the
+    // request, so make it fail early.
+    if size.checked_add(align).is_none() {
+        return core::ptr::null_mut();
+    }
+
+    // We forward the allocation request to `AllocatePool()`. This takes the
+    // memory-type and size as argument, and places a pointer to the allocation
+    // in an output argument. Note that UEFI guarantees 8-byte alignment (i.e.,
+    // `POOL_ALIGNMENT`). To support higher alignments, see the
+    // `align_request() / align_block() / unalign_block()` helpers.
     let mut ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let size_allocated = align_request(size, align);
     let r = unsafe {
