@@ -59,6 +59,51 @@ impl Allocator {
             memory_type: memtype,
         }
     }
+
+    /// Allocate Memory from UEFI Boot-Services
+    ///
+    /// Use the UEFI `allocate_pool` boot-services to request a block of memory
+    /// satisfying the given memory layout. The memory type tied to this
+    /// allocator object is used.
+    ///
+    /// This returns a null-pointer if the allocator could not serve the
+    /// request (which on UEFI implies out-of-memory). Otherwise, a non-null
+    /// pointer to the aligned block is returned.
+    ///
+    /// Safety
+    /// ------
+    ///
+    /// To ensure safety of this interface, the caller must guarantee:
+    ///
+    ///  * The allocation size must not be 0. The function will panic
+    ///    otherwise.
+    ///
+    ///  * The returned pointer is not necessarily the same pointer as returned
+    ///    by `allocate_pool` of the boot-services. A caller must not assume
+    ///    this when forwarding the pointer to other allocation services
+    ///    outside of this module.
+    pub unsafe fn alloc(self, layout: core::alloc::Layout) -> *mut u8 {
+        crate::raw::alloc(self.system_table, layout, self.memory_type)
+    }
+
+    /// Deallocate Memory from UEFI Boot-Services
+    ///
+    /// Use the UEFI `free_pool` boot-services to release a block of memory
+    /// previously allocated through `alloc()`.
+    ///
+    /// Safety
+    /// ------
+    ///
+    /// To ensure safety of this interface, the caller must guarantee:
+    ///
+    ///  * The memory block must be the same as previously returned by a call
+    ///    to `alloc()`. Every memory block must be released exactly once.
+    ///
+    ///  * The passed layout must match the layout used to allocate the memory
+    ///    block.
+    pub unsafe fn dealloc(self, ptr: *mut u8, layout: core::alloc::Layout) {
+        crate::raw::dealloc(self.system_table, ptr, layout)
+    }
 }
 
 unsafe impl core::alloc::Allocator for Allocator {
