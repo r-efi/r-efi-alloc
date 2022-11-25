@@ -13,7 +13,8 @@
 //! Note that `core::alloc::Allocator` is marked unstable as of time of this
 //! crate-release. That is, future versions of this trait definition might be
 //! incompatible to the current version. Make sure you use a crate-version that
-//! matches your standard-library.
+//! matches your standard-library. Furthermore, this module is only provided if
+//! the `allocator_api` feature is enabled.
 
 use r_efi::efi;
 
