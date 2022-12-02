@@ -16,7 +16,7 @@ library of rust on UEFI systems.
 
 The requirements for this project are:
 
- * `rustc >= 1.36.0`
+ * `rustc >= 1.62.0`
  * `r-efi >= 4.0.0`
 
 ### Build

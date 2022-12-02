@@ -1,6 +1,6 @@
 [package]
 name = "r-efi-alloc"
-version = "0.1.0"
+version = "1.0.0"
 
 authors = [
         "David Rheinsberg <david.rheinsberg@gmail.com>",
@@ -41,7 +41,9 @@ allocator_api = []
 # use a UEFI target configuration. To make `cargo test` work, we exclude all
 # examples from normal runs.
 examples = []
-# This is needed for use inside Rust std
+# This feature-gate is a requirement to integrate crates into the dependency
+# tree of the standard library. Use outside of the standard library is not
+# supported.
 rustc-dep-of-std = ['compiler_builtins/rustc-dep-of-std', 'core']
 
 [[example]]
