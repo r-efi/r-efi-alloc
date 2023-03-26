@@ -114,8 +114,10 @@ unsafe fn unalign_block(ptr: *mut u8, align: usize) -> *mut u8 {
 ///  * The returned pointer is not necessarily the same pointer as returned
 ///    by `allocate_pool` of the boot-services. A caller must not assume this
 ///    when forwarding the pointer to other allocation services.
+///
+///  * The BootServices must still be valid.
 pub unsafe fn alloc(
-    system_table: *mut efi::SystemTable,
+    boot_services: *mut efi::BootServices,
     layout: core::alloc::Layout,
     memory_type: efi::MemoryType,
 ) -> *mut u8 {
@@ -140,13 +142,7 @@ pub unsafe fn alloc(
     // `align_request() / align_block() / unalign_block()` helpers.
     let mut ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let size_allocated = align_request(size, align);
-    let r = unsafe {
-        ((*(*system_table).boot_services).allocate_pool)(
-            memory_type,
-            size_allocated,
-            &mut ptr,
-        )
-    };
+    let r = unsafe { ((*boot_services).allocate_pool)(memory_type, size_allocated, &mut ptr) };
 
     // The only real error-scenario is OOM ("out-of-memory"). UEFI does not
     // clearly specify what a return value of NULL+success means (but indicates
@@ -172,14 +168,16 @@ pub unsafe fn alloc(
 /// Safety
 /// ------
 ///
-/// The memory block must be the same as previously returned by `alloc()`.
-/// Furthermore, this function must be able to call the UEFI boot-servies
-/// through the specified system table, and this must match the same
-/// boot-services the memory block was allocated through.
+///  * The memory block must be the same as previously returned by `alloc()`.
+///    Furthermore, this function must be able to call the UEFI boot-servies
+///    through the specified system table, and this must match the same
+///    boot-services the memory block was allocated through.
 ///
-/// The passed layout must match the layout used to allocate the memory block.
+///  * The passed layout must match the layout used to allocate the memory block.
+///
+///  * The BootServices must still be valid.
 pub unsafe fn dealloc(
-    system_table: *mut efi::SystemTable,
+    boot_services: *mut efi::BootServices,
     ptr: *mut u8,
     layout: core::alloc::Layout,
 ) {
@@ -188,13 +186,10 @@ pub unsafe fn dealloc(
     assert!(!ptr.is_null());
 
     // Un-align the pointer to get access to the actual start of the block.
-    let original = unalign_block(
-        ptr,
-        layout.align(),
-    ) as *mut core::ffi::c_void;
+    let original = unalign_block(ptr, layout.align()) as *mut core::ffi::c_void;
 
     // Release the memory block via the boot-services.
-    let r = ((*(*system_table).boot_services).free_pool)(original);
+    let r = ((*boot_services).free_pool)(original);
 
     // The spec allows returning errors from `FreePool()`. However, it
     // must serve any valid requests. Only `INVALID_PARAMETER` is

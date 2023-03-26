@@ -82,7 +82,7 @@ impl Allocator {
     ///    this when forwarding the pointer to other allocation services
     ///    outside of this module.
     pub unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
-        crate::raw::alloc(self.system_table, layout, self.memory_type)
+        crate::raw::alloc((*self.system_table).boot_services, layout, self.memory_type)
     }
 
     /// Deallocate Memory from UEFI Boot-Services
@@ -101,7 +101,7 @@ impl Allocator {
     ///  * The passed layout must match the layout used to allocate the memory
     ///    block.
     pub unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
-        crate::raw::dealloc(self.system_table, ptr, layout)
+        crate::raw::dealloc((*self.system_table).boot_services, ptr, layout)
     }
 }
 
@@ -114,9 +114,7 @@ unsafe impl core::alloc::Allocator for Allocator {
         let size = layout.size();
 
         let ptr = if size > 0 {
-            unsafe {
-                crate::raw::alloc(self.system_table, layout, self.memory_type)
-            }
+            unsafe { self.alloc(layout) }
         } else {
             layout.dangling().as_ptr() as *mut _
         };
@@ -125,20 +123,15 @@ unsafe impl core::alloc::Allocator for Allocator {
             Err(core::alloc::AllocError)
         } else {
             Ok(
-                core::ptr::NonNull::new(
-                    core::ptr::slice_from_raw_parts(ptr, size) as *mut _,
-                ).unwrap(),
+                core::ptr::NonNull::new(core::ptr::slice_from_raw_parts(ptr, size) as *mut _)
+                    .unwrap(),
             )
         }
     }
 
-    unsafe fn deallocate(
-        &self,
-        ptr: core::ptr::NonNull<u8>,
-        layout: core::alloc::Layout,
-    ) {
+    unsafe fn deallocate(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
         if layout.size() != 0 {
-            crate::raw::dealloc(self.system_table, ptr.as_ptr(), layout)
+            self.dealloc(ptr.as_ptr(), layout)
         }
     }
 }
