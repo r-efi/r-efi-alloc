@@ -2,10 +2,6 @@
 name = "r-efi-alloc"
 version = "2.0.0"
 
-authors = [
-        "David Rheinsberg <david.rheinsberg@gmail.com>",
-        "Tom Gundersen <teg@jklm.no>",
-]
 categories = [
         "embedded",
         "hardware-support",
