@@ -26,7 +26,7 @@ defaults:
 jobs:
   publish:
     name: "Publish Crate"
-    uses: readaheadeu/rae-actions/.github/workflows/lib-publish-rust.yml@main
+    uses: readaheadeu/rae-actions/.github/workflows/lib-publish-rust.yml@v1
 
     permissions:
       contents: write
@@ -36,4 +36,4 @@ jobs:
 
     with:
       tag: ${{ github.event.inputs.tag }}
-      verify: ${{ github.event.inputs.verify == 'yes' && true || false }}
+      verify: ${{ github.event.inputs.verify == 'yes' || false }}
