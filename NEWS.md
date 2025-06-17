@@ -1,5 +1,15 @@
 # r-efi-alloc - UEFI Memory Allocator Integration
 
+## CHANGES WITH 2.1.0:
+
+        * Remove the optional dependency on `compiler-builtins`, which was
+          needed to build r-efi-alloc as part of rustc. This is no longer
+          necessary.
+
+        Contributions from: David Rheinsberg, Trevor Gross
+
+        - Dußlingen, 2025-06-17
+
 ## CHANGES WITH 2.0.0:
 
         * Update to r-efi-5.2.0. Since `r_efi::efi::SystemTable` is re-exposed
